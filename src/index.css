@@ -1,0 +1,89 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .border-dark-border {
+    border-color: #1F1F23;
+  }
+  .bg-dark-bg {
+    background-color: #0A0A0B;
+  }
+  .bg-dark-card {
+    background-color: #111111;
+  }
+  .text-gold {
+    color: #F59E0B;
+  }
+  .glow-gold {
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.5);
+  }
+}
+
+/* Animações cyberpunk */
+@keyframes glow {
+  0% { box-shadow: 0 0 20px rgba(245, 158, 11, 0.5); }
+  100% { box-shadow: 0 0 30px rgba(245, 158, 11, 0.8); }
+}
+
+.animate-glow {
+  animation: glow 2s ease-in-out infinite alternate;
+}
+
+/* Estilos base */
+@layer base {
+  * {
+    @apply border-gray-200;
+  }
+  body {
+    @apply bg-dark-bg text-white font-sans;
+  }
+}
+
+/* Componentes customizados */
+@layer components {
+  .glass-card {
+    @apply bg-dark-card/80 backdrop-blur-sm border border-dark-border rounded-lg;
+  }
+  
+  .neon-glow {
+    @apply shadow-neon;
+  }
+  
+  .btn-primary {
+    @apply bg-gold-500 hover:bg-gold-600 text-black font-semibold py-2 px-4 rounded-lg transition-all duration-200 shadow-neon;
+  }
+  
+  .btn-secondary {
+    @apply bg-transparent border border-gold-500 text-gold-500 hover:bg-gold-500 hover:text-black font-semibold py-2 px-4 rounded-lg transition-all duration-200;
+  }
+  
+  .input-field {
+    @apply bg-dark-card border border-dark-border text-white placeholder-gray-400 rounded-lg px-3 py-2 focus:border-gold-500 focus:ring-1 focus:ring-gold-500 transition-colors;
+  }
+}
+
+/* Gradientes de texto */
+@layer utilities {
+  .text-gradient {
+    @apply bg-gradient-to-r from-gold-500 to-gold-600 bg-clip-text text-transparent;
+  }
+  
+  .text-gradient-purple {
+    @apply bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent;
+  }
+}
+
+/* Animações adicionais */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(245, 158, 11, 0.6);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
