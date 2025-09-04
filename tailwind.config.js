@@ -27,6 +27,15 @@ module.exports = {
       boxShadow: {
         'neon': '0 0 20px rgba(245, 158, 11, 0.5)',
         'card': '0 20px 50px rgba(0, 0, 0, 0.8)'
+      },
+      animation: {
+        'float': 'float 6s ease-in-out infinite',
+        'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
+        'fade-in': 'fade-in 0.5s ease-out'
+      },
+      animationDelay: {
+        '2000': '2s',
+        '4000': '4s'
       }
     }
   },

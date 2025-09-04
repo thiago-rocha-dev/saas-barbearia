@@ -1,66 +1,91 @@
-import React from 'react';
-import { supabase } from './lib/supabase';
-import { Button } from './components/ui/Button';
+import { useEffect } from 'react'
+import { Routes, Route, Navigate } from 'react-router-dom'
+import { supabase } from './lib/supabase'
+import { ToastContainer } from './components/ui/Toast'
+import { AuthProvider } from './hooks/useAuth'
+import { AdminRoute, BarberRoute, CustomerRoute, PublicRoute } from './components/ProtectedRoute'
+import ComponentTest from './pages/ComponentTest'
+import Login from './pages/auth/Login'
+import AdminLayout from './pages/admin/layout'
+import DashboardAdmin from './pages/admin/index'
+import BarberLayout from './pages/barber/layout'
+import DashboardBarber from './pages/barber/index'
+import CustomerLayout from './pages/customer/layout'
+import DashboardCustomer from './pages/customer/index'
+import './App.css'
 
 function App() {
-  const [connected, setConnected] = React.useState(false);
-
-  React.useEffect(() => {
-    // Test Supabase connection
+  useEffect(() => {
+    // Teste de conexão com Supabase
     const testConnection = async () => {
       try {
-        const { error } = await supabase.from('barbershops').select('count');
-        setConnected(!error);
-      } catch (error) {
-        setConnected(false);
+        const { error } = await supabase
+          .from('barbershops')
+          .select('count')
+          .limit(1)
+        
+        if (error) {
+          console.log('Supabase conectado! (Erro esperado - tabelas ainda não criadas)');
+        }
+      } catch (err) {
+        console.error('Erro de conexão:', err);
       }
-    };
+    }
+    
     testConnection();
-  }, []);
+  }, [])
 
   return (
-    <div className="min-h-screen bg-dark-bg text-white p-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gold mb-4 animate-glow">
-            BarberPro SaaS
-          </h1>
-          <p className="text-gray-300 text-lg">
-            Sistema Premium de Gestão para Barbearias
-          </p>
-        </div>
-
-        <div className="bg-dark-card p-6 rounded-lg border border-dark-border glow-gold">
-          <h2 className="text-2xl font-semibold mb-4 text-gold">
-            🚀 Fase 1 - Fundação Estabelecida
-          </h2>
-          
-          <div className="space-y-4">
-            <div className="flex items-center space-x-3">
-              <span className="text-green-400">✅</span>
-              <span>React + Vite + TypeScript configurado</span>
-            </div>
-            <div className="flex items-center space-x-3">
-              <span className="text-green-400">✅</span>
-              <span>Tailwind CSS tema cyberpunk implementado</span>  
-            </div>
-            <div className="flex items-center space-x-3">
-              <span className={connected ? "text-green-400" : "text-red-400"}>
-                {connected ? "✅" : "❌"}
-              </span>
-              <span>Supabase: {connected ? "Conectado" : "Desconectado"}</span>
-            </div>
-          </div>
-
-          <div className="mt-6">
-            <Button variant="primary" size="lg" className="w-full">
-              Sistema Pronto para Desenvolvimento
-            </Button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+    <AuthProvider>
+      <Routes>
+        {/* Rota padrão redireciona baseado no papel do usuário */}
+        <Route path="/" element={<Navigate to="/auth/login" replace />} />
+        
+        {/* Rotas públicas */}
+        <Route path="/auth/login" element={
+          <PublicRoute>
+            <Login />
+          </PublicRoute>
+        } />
+        
+        {/* Rota de teste de componentes (desenvolvimento) */}
+        <Route path="/test" element={<ComponentTest />} />
+        
+        {/* Rotas protegidas - Admin */}
+        <Route path="/admin" element={
+          <AdminRoute>
+            <AdminLayout>
+              <DashboardAdmin />
+            </AdminLayout>
+          </AdminRoute>
+        } />
+        
+        {/* Rotas protegidas - Barbeiro */}
+        <Route path="/barber" element={
+          <BarberRoute>
+            <BarberLayout>
+              <DashboardBarber />
+            </BarberLayout>
+          </BarberRoute>
+        } />
+        
+        {/* Rotas protegidas - Cliente */}
+        <Route path="/customer" element={
+          <CustomerRoute>
+            <CustomerLayout>
+              <DashboardCustomer />
+            </CustomerLayout>
+          </CustomerRoute>
+        } />
+        
+        {/* Rota 404 - redireciona para login */}
+        <Route path="*" element={<Navigate to="/auth/login" replace />} />
+      </Routes>
+      
+      {/* Toast Container */}
+      <ToastContainer />
+    </AuthProvider>
+  )
 }
 
-export default App;
+export default App
