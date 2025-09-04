@@ -1,14 +1,41 @@
-import React from 'react';
+import React, { useState } from 'react';
 import KPICard from '../../components/dashboard/KPICard';
 import Timeline from '../../components/dashboard/Timeline';
 import DataTable from '../../components/dashboard/DataTable';
 import QuickActions from '../../components/dashboard/QuickActions';
 import { useDashboardData } from '../../hooks/useDashboardData';
+import { useAppointments } from '../../hooks/useAppointments';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
+import AppointmentCalendar from '../../components/appointments/AppointmentCalendar';
+import AppointmentForm from '../../components/appointments/AppointmentForm';
 import type { DataTableColumn } from '../../types/dashboard';
+import type { Appointment } from '../../types/appointments';
 
 const DashboardBarber: React.FC = () => {
   const { kpis, appointments, timeline, quickActions, loading, refreshData } = useDashboardData('barber');
+
+  const {
+    appointments: realAppointments,
+    loading: appointmentsLoading
+  } = useAppointments();
+
+  const [activeTab, setActiveTab] = useState<'overview' | 'calendar' | 'appointments'>('overview');
+  const [showAppointmentForm, setShowAppointmentForm] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
+
+  const handleCreateAppointment = () => {
+    setSelectedAppointment(null);
+    setShowAppointmentForm(true);
+  };
+
+  const handleEditAppointment = (appointment: Appointment) => {
+    setSelectedAppointment(appointment);
+    setShowAppointmentForm(true);
+  };
+
+
+
+  // Removed unused handleAppointmentSubmit function
 
   // Define columns for upcoming appointments table
   const upcomingColumns: DataTableColumn[] = [
@@ -179,6 +206,15 @@ const DashboardBarber: React.FC = () => {
         </div>
         <div className="flex space-x-3">
           <button
+            onClick={handleCreateAppointment}
+            className="px-4 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 rounded-lg transition-all duration-200 border border-cyan-500/30 hover:border-cyan-500/50 flex items-center space-x-2"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            <span>Novo Agendamento</span>
+          </button>
+          <button
             onClick={refreshData}
             className="px-4 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 rounded-lg transition-all duration-200 border border-cyan-500/30 hover:border-cyan-500/50"
           >
@@ -190,18 +226,105 @@ const DashboardBarber: React.FC = () => {
         </div>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {loading.kpis ? (
-          Array.from({ length: 4 }).map((_, index) => (
-            <div key={index} className="h-32 bg-white/5 rounded-xl animate-pulse" />
-          ))
-        ) : (
-          kpis.map((kpi) => (
-            <KPICard key={kpi.id} kpi={kpi} />
-          ))
-        )}
+      {/* Navigation Tabs */}
+      <div className="flex space-x-1 bg-white/5 backdrop-blur-sm rounded-lg p-1">
+        {[
+          { id: 'overview', label: 'Visão Geral', icon: 'chart-bar' },
+          { id: 'calendar', label: 'Calendário', icon: 'calendar' },
+          { id: 'appointments', label: 'Agendamentos', icon: 'clock' }
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id as any)}
+            className={`flex-1 flex items-center justify-center space-x-2 px-4 py-2 rounded-md transition-all ${
+              activeTab === tab.id
+                ? 'bg-cyan-500/20 text-cyan-300'
+                : 'text-gray-400 hover:text-white hover:bg-white/10'
+            }`}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {tab.icon === 'chart-bar' && (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              )}
+              {tab.icon === 'calendar' && (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              )}
+              {tab.icon === 'clock' && (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              )}
+            </svg>
+            <span>{tab.label}</span>
+          </button>
+        ))}
       </div>
+
+      {/* Tab Content */}
+      {activeTab === 'overview' && (
+        <>
+          {/* KPI Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {loading.kpis ? (
+              Array.from({ length: 4 }).map((_, index) => (
+                <div key={index} className="h-32 bg-white/5 rounded-xl animate-pulse" />
+              ))
+            ) : (
+              kpis.map((kpi) => (
+                <KPICard key={kpi.id} kpi={kpi} />
+              ))
+            )}
+          </div>
+        </>
+      )}
+
+      {activeTab === 'calendar' && (
+        <div className="bg-white/5 backdrop-blur-lg rounded-xl border border-white/10 p-6">
+          <AppointmentCalendar
+            onSelectEvent={(event) => {
+              if (event.resource) {
+                handleEditAppointment(event.resource);
+              }
+            }}
+            onSelectSlot={() => {
+              handleCreateAppointment();
+            }}
+            role="barber"
+          />
+        </div>
+      )}
+
+      {activeTab === 'appointments' && (
+        <div className="bg-white/5 backdrop-blur-lg rounded-xl border border-white/10 p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold text-white">
+              Todos os Agendamentos
+            </h2>
+            <button
+              onClick={handleCreateAppointment}
+              className="px-4 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 rounded-lg transition-colors"
+            >
+              Novo Agendamento
+            </button>
+          </div>
+          {appointmentsLoading ? (
+            <div className="space-y-3">
+              {Array.from({ length: 5 }).map((_, index) => (
+                <div key={index} className="h-16 bg-white/5 rounded-lg animate-pulse" />
+              ))}
+            </div>
+          ) : (
+            <DataTable
+              data={realAppointments}
+              columns={upcomingColumns}
+              searchable={true}
+              pagination={true}
+            />
+          )}
+        </div>
+      )}
+
+      {activeTab === 'overview' && (
+        <>
+          {/* KPI Cards - Already rendered above */}
 
       {/* Timeline and Quick Actions Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -335,6 +458,35 @@ const DashboardBarber: React.FC = () => {
           </div>
         </div>
       </div>
+        </>
+      )}
+
+      {/* Appointment Form Modal */}
+      {showAppointmentForm && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-gray-900/95 backdrop-blur-lg rounded-xl border border-white/10 p-6 w-full max-w-md mx-4">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-semibold text-white">
+                {selectedAppointment ? 'Editar Agendamento' : 'Novo Agendamento'}
+              </h3>
+              <button
+                onClick={() => setShowAppointmentForm(false)}
+                className="text-gray-400 hover:text-white"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <AppointmentForm
+              isOpen={showAppointmentForm}
+              onClose={() => setShowAppointmentForm(false)}
+              appointment={selectedAppointment}
+              role="barber"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

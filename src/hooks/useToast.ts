@@ -9,6 +9,7 @@ interface ToastOptions {
 
 interface UseToastReturn {
   addToast: (options: ToastOptions & { type: ToastType }) => void;
+  showToast: (message: string, type: ToastType, title?: string) => void;
   dismiss: (id: string) => void;
   dismissAll: () => void;
 }
@@ -18,8 +19,17 @@ export const useToast = (): UseToastReturn => {
     globalToast.addToast(options);
   };
 
+  const showToast = (message: string, type: ToastType, title?: string) => {
+    addToast({
+      description: message,
+      title,
+      type
+    });
+  };
+
   return {
     addToast,
+    showToast,
     dismiss: globalToast.dismiss.bind(globalToast),
     dismissAll: globalToast.dismissAll.bind(globalToast),
   };

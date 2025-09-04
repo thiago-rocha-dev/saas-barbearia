@@ -1,4 +1,8 @@
 // Dashboard Types - Role-Based Access Control & Data Structures
+import type { Appointment } from './appointments';
+
+// Re-export Appointment for dashboard usage
+export type { Appointment };
 
 // User Roles
 export type UserRole = 'admin' | 'barber' | 'customer';
@@ -39,28 +43,7 @@ export interface Service {
   description?: string;
 }
 
-// Appointment
-export interface Appointment {
-  id: string;
-  clientId: string;
-  clientName: string;
-  clientPhone?: string;
-  clientAvatar?: string;
-  barberId: string;
-  barberName: string;
-  serviceId: string;
-  serviceName: string;
-  date: Date;
-  datetime: Date;
-  startTime: string;
-  endTime: string;
-  duration: number;
-  price: number;
-  status: AppointmentStatus;
-  notes?: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
+// Appointment interface consolidated in appointments.ts
 
 // Barber
 export interface Barber {

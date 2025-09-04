@@ -4,7 +4,6 @@ import type {
   Appointment,
   Barber,
   Customer,
-  ChartData,
   LegacyChartData,
   TimelineEvent,
   QuickAction,
@@ -153,103 +152,93 @@ const generateMockAppointments = (role: UserRole): Appointment[] => {
   const baseAppointments: Appointment[] = [
     {
       id: '1',
-      clientId: 'client-1',
-      clientName: 'João Silva',
-      clientPhone: '(11) 99999-1111',
-      barberId: 'barber-1',
-      barberName: 'Carlos Silva',
-      serviceId: 'service-1',
-      serviceName: 'Corte + Barba',
-      date: new Date('2024-01-15T10:00:00'),
-      startTime: '10:00',
-      endTime: '10:45',
-      duration: 45,
-      price: 45,
+      client_id: 'client-1',
+      barber_id: 'barber-1',
+      client_name: 'João Silva',
+      barber_name: 'Carlos Silva',
+      service_id: 'service-1',
+      service_name: 'Corte + Barba',
+      appointment_date: '2024-01-15',
+      appointment_time: '10:00',
+      duration_minutes: 45,
       status: 'confirmed',
       notes: 'Cliente prefere corte baixo nas laterais',
-      createdAt: new Date('2024-01-14T09:00:00'),
-      updatedAt: new Date('2024-01-14T09:00:00')
+      price: 45,
+      created_at: '2024-01-14T09:00:00',
+      updated_at: '2024-01-14T09:00:00'
     },
     {
       id: '2',
-      clientId: 'client-2',
-      clientName: 'Pedro Santos',
-      clientPhone: '(11) 99999-2222',
-      barberId: 'barber-2',
-      barberName: 'João Oliveira',
-      serviceId: 'service-2',
-      serviceName: 'Corte Simples',
-      date: new Date('2024-01-15T11:30:00'),
-      startTime: '11:30',
-      endTime: '12:00',
-      duration: 30,
-      price: 25,
+      client_id: 'client-2',
+      barber_id: 'barber-2',
+      client_name: 'Pedro Santos',
+      barber_name: 'João Oliveira',
+      service_id: 'service-2',
+      service_name: 'Corte Simples',
+      appointment_date: '2024-01-15',
+      appointment_time: '11:30',
+      duration_minutes: 30,
       status: 'pending',
-      createdAt: new Date('2024-01-14T10:00:00'),
-      updatedAt: new Date('2024-01-14T10:00:00')
+      price: 25,
+      created_at: '2024-01-14T10:00:00',
+      updated_at: '2024-01-14T10:00:00'
     },
     {
       id: '3',
-      clientId: 'client-3',
-      clientName: 'Carlos Oliveira',
-      clientPhone: '(11) 99999-3333',
-      barberId: 'barber-1',
-      barberName: 'Carlos Silva',
-      serviceId: 'service-3',
-      serviceName: 'Barba',
-      date: new Date('2024-01-15T14:00:00'),
-      startTime: '14:00',
-      endTime: '14:20',
-      duration: 20,
-      price: 20,
+      client_id: 'client-3',
+      barber_id: 'barber-1',
+      client_name: 'Carlos Oliveira',
+      barber_name: 'Carlos Silva',
+      service_id: 'service-3',
+      service_name: 'Barba',
+      appointment_date: '2024-01-15',
+      appointment_time: '14:00',
+      duration_minutes: 20,
       status: 'completed',
-      createdAt: new Date('2024-01-14T11:00:00'),
-      updatedAt: new Date('2024-01-15T14:20:00')
+      price: 20,
+      created_at: '2024-01-14T11:00:00',
+      updated_at: '2024-01-15T14:20:00'
     },
     {
       id: '4',
-      clientId: 'client-4',
-      clientName: 'Rafael Costa',
-      clientPhone: '(11) 99999-4444',
-      barberId: 'barber-3',
-      barberName: 'Pedro Almeida',
-      serviceId: 'service-4',
-      serviceName: 'Corte + Barba + Sobrancelha',
-      date: new Date('2024-01-15T15:30:00'),
-      startTime: '15:30',
-      endTime: '16:30',
-      duration: 60,
-      price: 55,
+      client_id: 'client-4',
+      barber_id: 'barber-3',
+      client_name: 'Rafael Costa',
+      barber_name: 'Pedro Almeida',
+      service_id: 'service-4',
+      service_name: 'Corte + Barba + Sobrancelha',
+      appointment_date: '2024-01-15',
+      appointment_time: '15:30',
+      duration_minutes: 60,
       status: 'confirmed',
-      createdAt: new Date('2024-01-14T12:00:00'),
-      updatedAt: new Date('2024-01-14T12:00:00')
+      price: 55,
+      created_at: '2024-01-14T12:00:00',
+      updated_at: '2024-01-14T12:00:00'
     },
     {
       id: '5',
-      clientId: 'client-5',
-      clientName: 'Lucas Ferreira',
-      clientPhone: '(11) 99999-5555',
-      barberId: 'barber-2',
-      barberName: 'João Oliveira',
-      serviceId: 'service-2',
-      serviceName: 'Corte Simples',
-      date: new Date('2024-01-15T16:00:00'),
-      startTime: '16:00',
-      endTime: '16:30',
-      duration: 30,
-      price: 25,
+      client_id: 'client-5',
+      barber_id: 'barber-2',
+      client_name: 'Lucas Ferreira',
+      barber_name: 'João Oliveira',
+      service_id: 'service-2',
+      service_name: 'Corte Simples',
+      appointment_date: '2024-01-15',
+      appointment_time: '16:00',
+      duration_minutes: 30,
       status: 'pending',
-      createdAt: new Date('2024-01-14T13:00:00'),
-      updatedAt: new Date('2024-01-14T13:00:00')
+      price: 25,
+      created_at: '2024-01-14T13:00:00',
+      updated_at: '2024-01-14T13:00:00'
     }
   ];
 
   // Filter based on role
   if (role === 'barber') {
-    return baseAppointments.filter(apt => apt.barberId === 'barber-1');
+    return baseAppointments.filter(apt => apt.barber_id === 'barber-1');
   }
   if (role === 'customer') {
-    return baseAppointments.filter(apt => apt.clientName === 'João Silva');
+    return baseAppointments.filter(apt => apt.client_name === 'João Silva');
   }
   return baseAppointments;
 };
@@ -403,17 +392,21 @@ const generateMockTimeline = (role: UserRole): TimelineEvent[] => {
         id: '1',
         title: 'Novo barbeiro contratado',
         description: 'Anderson Costa foi adicionado à equipe',
+        date: new Date('2024-01-15T09:00:00'),
+        time: '09:00',
         datetime: new Date('2024-01-15T09:00:00'),
         status: 'completed' as const,
-        type: 'staff' as const
+        type: 'other' as const
       },
       {
         id: '2',
         title: 'Relatório mensal gerado',
         description: 'Relatório de dezembro disponível',
+        date: new Date('2024-01-15T10:30:00'),
+        time: '10:30',
         datetime: new Date('2024-01-15T10:30:00'),
         status: 'completed' as const,
-        type: 'report' as const
+        type: 'other' as const
       }
     ],
     barber: [
@@ -421,6 +414,8 @@ const generateMockTimeline = (role: UserRole): TimelineEvent[] => {
         id: '1',
         title: 'João Silva - Corte + Barba',
         description: 'Cliente preferencial, corte baixo nas laterais',
+        date: new Date('2024-01-15T10:00:00'),
+        time: '10:00',
         datetime: new Date('2024-01-15T10:00:00'),
         status: 'confirmed' as const,
         type: 'appointment' as const
@@ -429,6 +424,8 @@ const generateMockTimeline = (role: UserRole): TimelineEvent[] => {
         id: '2',
         title: 'Carlos Oliveira - Barba',
         description: 'Barba completa com finalização',
+        date: new Date('2024-01-15T14:00:00'),
+        time: '14:00',
         datetime: new Date('2024-01-15T14:00:00'),
         status: 'pending' as const,
         type: 'appointment' as const
@@ -439,6 +436,8 @@ const generateMockTimeline = (role: UserRole): TimelineEvent[] => {
         id: '1',
         title: 'Próximo agendamento',
         description: 'Corte + Barba com Carlos Mendes',
+        date: new Date('2024-01-20T10:00:00'),
+        time: '10:00',
         datetime: new Date('2024-01-20T10:00:00'),
         status: 'confirmed' as const,
         type: 'appointment' as const
@@ -447,6 +446,8 @@ const generateMockTimeline = (role: UserRole): TimelineEvent[] => {
         id: '2',
         title: 'Último atendimento',
         description: 'Corte simples - Avaliação: 5 estrelas',
+        date: new Date('2024-01-10T10:00:00'),
+        time: '10:00',
         datetime: new Date('2024-01-10T10:00:00'),
         status: 'completed' as const,
         type: 'appointment' as const
@@ -462,7 +463,7 @@ const generateMockQuickActions = (role: UserRole): QuickAction[] => {
     admin: [
       {
         id: 'new-barber',
-        title: 'Novo Barbeiro',
+        label: 'Novo Barbeiro',
         description: 'Adicionar barbeiro à equipe',
         icon: 'user-plus',
         color: 'gold' as const,
@@ -470,7 +471,7 @@ const generateMockQuickActions = (role: UserRole): QuickAction[] => {
       },
       {
         id: 'view-reports',
-        title: 'Ver Relatórios',
+        label: 'Ver Relatórios',
         description: 'Acessar relatórios detalhados',
         icon: 'chart-bar',
         color: 'cyan' as const,
@@ -478,7 +479,7 @@ const generateMockQuickActions = (role: UserRole): QuickAction[] => {
       },
       {
         id: 'settings',
-        title: 'Configurações',
+        label: 'Configurações',
         description: 'Gerenciar configurações do sistema',
         icon: 'cog-6-tooth',
         color: 'purple' as const,
@@ -488,7 +489,7 @@ const generateMockQuickActions = (role: UserRole): QuickAction[] => {
     barber: [
       {
         id: 'check-in',
-        title: 'Check-in Cliente',
+        label: 'Check-in Cliente',
         description: 'Confirmar chegada do cliente',
         icon: 'check-circle',
         color: 'cyan' as const,
@@ -496,7 +497,7 @@ const generateMockQuickActions = (role: UserRole): QuickAction[] => {
       },
       {
         id: 'reschedule',
-        title: 'Reagendar',
+        label: 'Reagendar',
         description: 'Reagendar atendimento',
         icon: 'calendar',
         color: 'cyan' as const,
@@ -504,7 +505,7 @@ const generateMockQuickActions = (role: UserRole): QuickAction[] => {
       },
       {
         id: 'finish-service',
-        title: 'Finalizar Serviço',
+        label: 'Finalizar Serviço',
         description: 'Concluir atendimento atual',
         icon: 'check-badge',
         color: 'purple' as const,
@@ -514,7 +515,7 @@ const generateMockQuickActions = (role: UserRole): QuickAction[] => {
     customer: [
       {
         id: 'new-appointment',
-        title: 'Novo Agendamento',
+        label: 'Novo Agendamento',
         description: 'Agendar próximo atendimento',
         icon: 'plus-circle',
         color: 'purple' as const,
@@ -522,7 +523,7 @@ const generateMockQuickActions = (role: UserRole): QuickAction[] => {
       },
       {
         id: 'view-history',
-        title: 'Ver Histórico',
+        label: 'Ver Histórico',
         description: 'Consultar atendimentos anteriores',
         icon: 'clock',
         color: 'purple' as const,
@@ -530,7 +531,7 @@ const generateMockQuickActions = (role: UserRole): QuickAction[] => {
       },
       {
         id: 'rate-service',
-        title: 'Avaliar Serviço',
+        label: 'Avaliar Serviço',
         description: 'Avaliar último atendimento',
         icon: 'star',
         color: 'purple' as const,

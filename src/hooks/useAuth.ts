@@ -1,7 +1,7 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import type { ReactNode } from 'react';
 import { supabase } from '../lib/supabase';
-import type { User, UserRole, Permission, RolePermissions } from '../types/dashboard';
+import type { User, UserRole, RolePermissions } from '../types/dashboard';
 import { useToast } from './useToast';
 
 // Auth Context

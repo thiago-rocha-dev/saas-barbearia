@@ -116,7 +116,7 @@ const Timeline: React.FC<TimelineProps> = ({
           {events.length === 0 ? (
             <p className="text-gray-400 text-center py-4">Nenhum agendamento hoje</p>
           ) : (
-            events.map((event: TimelineEvent, index: number) => {
+            events.map((event: TimelineEvent) => {
               const statusColor: StatusColorConfig = getStatusColor(event.status);
               return (
                 <div

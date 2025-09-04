@@ -9,7 +9,7 @@ interface BarberLayoutProps {
 }
 
 export const BarberLayout: React.FC<BarberLayoutProps> = ({ children }) => {
-  const { user } = useAuth();
+  const { } = useAuth();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-cyan-900 to-green-900">

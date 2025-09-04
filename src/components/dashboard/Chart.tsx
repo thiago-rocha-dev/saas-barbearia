@@ -29,7 +29,7 @@ const Chart: React.FC<ChartProps> = ({
   className,
   color = 'cyan',
   showGrid = true,
-  showTooltip = true,
+
   animate = true
 }) => {
   const { labels, datasets } = data;
