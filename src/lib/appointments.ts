@@ -10,7 +10,7 @@ import type {
   WorkingHours,
   CalendarEvent
 } from '../types/appointments';
-import type { UserRole } from './auth';
+import type { UserRole } from '../types/dashboard';
 
 // ============================================================================
 // APPOINTMENT CRUD OPERATIONS
@@ -68,8 +68,8 @@ export async function fetchAppointments(
     if (filters.barberId) {
       query = query.eq('barber_id', filters.barberId);
     }
-    if (filters.clientId) {
-      query = query.eq('client_id', filters.clientId);
+    if (filters.customerId) {
+      query = query.eq('client_id', filters.customerId);
     }
     if (filters.serviceId) {
       query = query.eq('service_id', filters.serviceId);
@@ -105,18 +105,22 @@ export async function fetchAppointments(
     // Transform data to include computed fields
     const appointments: Appointment[] = (data || []).map(item => ({
       id: item.id,
+      customer_id: item.client_id || item.customer_id,
       client_id: item.client_id,
       barber_id: item.barber_id,
       service_id: item.service_id,
       service_name: item.services?.name || 'Serviço não encontrado',
       appointment_date: item.appointment_date,
       appointment_time: item.appointment_time,
-      duration_minutes: item.duration_minutes,
+      duration_minutes: item.duration_minutes || item.services?.duration_minutes || 30,
       status: item.status,
+      total_price: item.price || item.services?.price || 0,
       price: item.price || item.services?.price || 0,
       notes: item.notes,
       created_at: item.created_at,
       updated_at: item.updated_at,
+      customer_name: item.client?.raw_user_meta_data?.name || item.client?.email || 'Cliente',
+      customer_email: item.client?.email || '',
       client_name: item.client?.raw_user_meta_data?.name || item.client?.email || 'Cliente',
       barber_name: item.barber?.raw_user_meta_data?.name || item.barber?.email || 'Barbeiro'
     }));
@@ -220,19 +224,23 @@ export async function createAppointment(
 
     const appointment: Appointment = {
       id: data.id,
+      customer_id: data.client_id || data.customer_id,
       client_id: data.client_id,
       barber_id: data.barber_id,
       service_id: data.service_id,
       service_name: data.services?.name || 'Serviço',
       appointment_date: data.appointment_date,
       appointment_time: data.appointment_time,
-      duration_minutes: data.duration_minutes,
+      duration_minutes: data.duration_minutes || data.services?.duration_minutes || 30,
       status: data.status,
+      total_price: data.price || data.services?.price || 0,
       price: data.price,
       notes: data.notes,
       created_at: data.created_at,
       updated_at: data.updated_at,
-      client_name: data.client?.raw_user_meta_data?.name || 'Cliente',
+      customer_name: data.client?.raw_user_meta_data?.name || data.client?.email || 'Cliente',
+      customer_email: data.client?.email || '',
+      client_name: data.client?.raw_user_meta_data?.name || data.client?.email || 'Cliente',
       barber_name: data.barber?.raw_user_meta_data?.name || 'Barbeiro'
     };
 
@@ -321,19 +329,23 @@ export async function updateAppointment(
 
     const appointment: Appointment = {
       id: data.id,
+      customer_id: data.client_id || data.customer_id,
       client_id: data.client_id,
       barber_id: data.barber_id,
       service_id: data.service_id,
       service_name: data.services?.name || 'Serviço',
       appointment_date: data.appointment_date,
       appointment_time: data.appointment_time,
-      duration_minutes: data.duration_minutes,
+      duration_minutes: data.duration_minutes || data.services?.duration_minutes || 30,
       status: data.status,
+      total_price: data.price || data.services?.price || 0,
       price: data.price,
       notes: data.notes,
       created_at: data.created_at,
       updated_at: data.updated_at,
-      client_name: data.client?.raw_user_meta_data?.name || 'Cliente',
+      customer_name: data.client?.raw_user_meta_data?.name || data.client?.email || 'Cliente',
+      customer_email: data.client?.email || '',
+      client_name: data.client?.raw_user_meta_data?.name || data.client?.email || 'Cliente',
       barber_name: data.barber?.raw_user_meta_data?.name || 'Barbeiro'
     };
 
@@ -585,7 +597,7 @@ export async function getCalendarEvents(
       start: new Date(`${appointment.appointment_date}T${appointment.appointment_time}`),
       end: new Date(
         new Date(`${appointment.appointment_date}T${appointment.appointment_time}`).getTime() +
-        appointment.duration_minutes * 60000
+        (appointment.duration_minutes || 30) * 60000
       ),
       resource: appointment
     }));

@@ -37,14 +37,38 @@ export const registerSchema = z.object({
 export type LoginFormData = z.infer<typeof loginSchema>;
 export type RegisterFormData = z.infer<typeof registerSchema>;
 
-// Função helper para validação em tempo real
-export const validateField = (schema: z.ZodSchema, field: string, value: any) => {
+// Schemas individuais para validação de campos específicos
+export const emailFieldSchema = z
+  .string()
+  .min(1, 'Email é obrigatório')
+  .email('Formato de email inválido');
+
+export const passwordFieldSchema = z
+  .string()
+  .min(6, 'Senha deve ter pelo menos 6 caracteres')
+  .max(100, 'Senha muito longa');
+
+// Função helper para validação em tempo real de campos individuais
+export const validateField = (field: string, value: any) => {
   try {
-    schema.parse({ [field]: value });
+    let fieldSchema;
+    
+    switch (field) {
+      case 'email':
+        fieldSchema = emailFieldSchema;
+        break;
+      case 'password':
+        fieldSchema = passwordFieldSchema;
+        break;
+      default:
+        return { isValid: false, error: 'Campo não reconhecido' };
+    }
+    
+    fieldSchema.parse(value);
     return { isValid: true, error: null };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const fieldError = error.issues.find(err => err.path.includes(field));
+      const fieldError = error.issues[0];
       return {
         isValid: false,
         error: fieldError?.message || 'Campo inválido'

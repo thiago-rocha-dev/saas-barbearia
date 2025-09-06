@@ -8,7 +8,7 @@ import type {
   Service,
   TimeSlot
 } from '../../types/appointments';
-import type { UserRole } from '../../lib/auth';
+import type { UserRole } from '../../types/dashboard';
 import TimeSlotPicker from './TimeSlotPicker';
 import ServiceSelector from './ServiceSelector';
 
@@ -41,6 +41,9 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({
     service_id: '',
     appointment_date: selectedDate ? selectedDate.toISOString().split('T')[0] : '',
     appointment_time: selectedTime || '',
+    customer_name: '',
+    customer_email: '',
+    total_price: 0,
     notes: ''
   });
 
@@ -57,6 +60,9 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({
         service_id: appointment.service_id,
         appointment_date: appointment.appointment_date,
         appointment_time: appointment.appointment_time,
+        customer_name: appointment.customer_name || '',
+        customer_email: appointment.customer_email || '',
+        total_price: appointment.total_price || 0,
         notes: appointment.notes || ''
       });
       
@@ -69,6 +75,9 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({
         service_id: '',
         appointment_date: selectedDate ? selectedDate.toISOString().split('T')[0] : '',
         appointment_time: selectedTime || '',
+        customer_name: '',
+        customer_email: '',
+        total_price: 0,
         notes: ''
       });
       setSelectedService(null);

@@ -1,11 +1,85 @@
-# React + TypeScript + Vite
+# BarberPro - Sistema de Agendamento para Barbearias
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Sistema completo de agendamento para barbearias com autenticação baseada em roles, gerenciamento de clientes, barbeiros e administradores.
 
-Currently, two official plugins are available:
+## 🔐 Sistema de Autenticação Premium
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### Arquitetura Centralizada
+
+O sistema utiliza uma arquitetura de autenticação completamente refatorada que elimina duplicações e garante segurança máxima:
+
+- **Hook Único**: `useAuth` como única fonte de verdade
+- **Busca Atômica**: Profile sempre buscado diretamente do banco de dados
+- **Zero Fallbacks**: Nenhum fallback silencioso para roles
+- **Redirecionamento Seguro**: Baseado exclusivamente no role real do usuário
+
+### Fluxo de Autenticação
+
+1. **Login**: Usuário fornece email/senha
+2. **Autenticação Supabase**: Validação via Supabase Auth
+3. **Busca de Profile**: Busca atômica na tabela `profiles` usando UUID
+4. **Validação de Role**: Verificação rigorosa do role do usuário
+5. **Redirecionamento**: Direcionamento automático baseado no role:
+   - `admin` → `/admin`
+   - `barber` → `/barber`
+   - `customer` → `/customer`
+
+### Roles e Permissões
+
+#### Admin
+- Acesso total ao sistema
+- Gerenciamento de usuários
+- Relatórios e analytics
+- Configurações do sistema
+
+#### Barber (Barbeiro)
+- Gerenciamento de agenda própria
+- Visualização de clientes
+- Controle de serviços
+- Relatórios pessoais
+
+#### Customer (Cliente)
+- Agendamento de serviços
+- Histórico pessoal
+- Gerenciamento de perfil
+- Avaliações
+
+### Segurança
+
+- **Timeout de Segurança**: 15 segundos para operações críticas
+- **Validação Rigorosa**: Verificação de role em cada operação
+- **Erro Explícito**: Profiles mal configurados geram erro visível
+- **Session Recovery**: Recuperação automática de sessão
+- **Logout Seguro**: Limpeza completa de estado
+
+## 🛠️ Tecnologias
+
+- **Frontend**: React + TypeScript + Vite
+- **Autenticação**: Supabase Auth
+- **Banco de Dados**: Supabase (PostgreSQL)
+- **Roteamento**: React Router DOM
+- **Estilização**: Tailwind CSS
+- **Estado**: Context API
+
+## 📁 Estrutura do Projeto
+
+```
+src/
+├── hooks/
+│   └── useAuth.ts          # Hook centralizado de autenticação
+├── components/
+│   └── ProtectedRoute.tsx   # Componente de rota protegida
+├── pages/
+│   ├── auth/
+│   │   └── Login.tsx        # Página de login
+│   ├── admin/               # Páginas do admin
+│   ├── barber/              # Páginas do barbeiro
+│   └── customer/            # Páginas do cliente
+├── types/
+│   └── dashboard.ts         # Tipos TypeScript
+└── lib/
+    └── supabase.ts          # Configuração Supabase
+```
 
 ## Expanding the ESLint configuration
 

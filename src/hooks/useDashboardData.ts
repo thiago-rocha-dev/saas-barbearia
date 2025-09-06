@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useAppointments } from './useAppointments';
 import type {
   DashboardKPI,
   Appointment,
@@ -148,100 +149,6 @@ const generateMockKPIs = (role: UserRole): DashboardKPI[] => {
   return baseKPIs[role] || [];
 };
 
-const generateMockAppointments = (role: UserRole): Appointment[] => {
-  const baseAppointments: Appointment[] = [
-    {
-      id: '1',
-      client_id: 'client-1',
-      barber_id: 'barber-1',
-      client_name: 'João Silva',
-      barber_name: 'Carlos Silva',
-      service_id: 'service-1',
-      service_name: 'Corte + Barba',
-      appointment_date: '2024-01-15',
-      appointment_time: '10:00',
-      duration_minutes: 45,
-      status: 'confirmed',
-      notes: 'Cliente prefere corte baixo nas laterais',
-      price: 45,
-      created_at: '2024-01-14T09:00:00',
-      updated_at: '2024-01-14T09:00:00'
-    },
-    {
-      id: '2',
-      client_id: 'client-2',
-      barber_id: 'barber-2',
-      client_name: 'Pedro Santos',
-      barber_name: 'João Oliveira',
-      service_id: 'service-2',
-      service_name: 'Corte Simples',
-      appointment_date: '2024-01-15',
-      appointment_time: '11:30',
-      duration_minutes: 30,
-      status: 'pending',
-      price: 25,
-      created_at: '2024-01-14T10:00:00',
-      updated_at: '2024-01-14T10:00:00'
-    },
-    {
-      id: '3',
-      client_id: 'client-3',
-      barber_id: 'barber-1',
-      client_name: 'Carlos Oliveira',
-      barber_name: 'Carlos Silva',
-      service_id: 'service-3',
-      service_name: 'Barba',
-      appointment_date: '2024-01-15',
-      appointment_time: '14:00',
-      duration_minutes: 20,
-      status: 'completed',
-      price: 20,
-      created_at: '2024-01-14T11:00:00',
-      updated_at: '2024-01-15T14:20:00'
-    },
-    {
-      id: '4',
-      client_id: 'client-4',
-      barber_id: 'barber-3',
-      client_name: 'Rafael Costa',
-      barber_name: 'Pedro Almeida',
-      service_id: 'service-4',
-      service_name: 'Corte + Barba + Sobrancelha',
-      appointment_date: '2024-01-15',
-      appointment_time: '15:30',
-      duration_minutes: 60,
-      status: 'confirmed',
-      price: 55,
-      created_at: '2024-01-14T12:00:00',
-      updated_at: '2024-01-14T12:00:00'
-    },
-    {
-      id: '5',
-      client_id: 'client-5',
-      barber_id: 'barber-2',
-      client_name: 'Lucas Ferreira',
-      barber_name: 'João Oliveira',
-      service_id: 'service-2',
-      service_name: 'Corte Simples',
-      appointment_date: '2024-01-15',
-      appointment_time: '16:00',
-      duration_minutes: 30,
-      status: 'pending',
-      price: 25,
-      created_at: '2024-01-14T13:00:00',
-      updated_at: '2024-01-14T13:00:00'
-    }
-  ];
-
-  // Filter based on role
-  if (role === 'barber') {
-    return baseAppointments.filter(apt => apt.barber_id === 'barber-1');
-  }
-  if (role === 'customer') {
-    return baseAppointments.filter(apt => apt.client_name === 'João Silva');
-  }
-  return baseAppointments;
-};
 
 const generateMockBarbers = (): Barber[] => [
   {
@@ -559,9 +466,11 @@ interface DashboardData {
 
 // Main hook
 export const useDashboardData = (role: UserRole): DashboardData => {
+  const { appointments: realAppointments, loading: appointmentsLoading, fetchAppointments } = useAppointments();
+  
   const [loading, setLoading] = useState<LoadingState>({
     kpis: true,
-    appointments: true,
+    appointments: appointmentsLoading,
     charts: true,
     timeline: true,
     quickActions: true
@@ -588,17 +497,41 @@ export const useDashboardData = (role: UserRole): DashboardData => {
   const [stats, setStats] = useState<AdminStats | BarberStats | CustomerStats | null>(null);
 
   useEffect(() => {
-    // Simulate API loading with realistic delays
+    // Load real appointments data and simulate API loading with realistic delays
     const loadData = async () => {
+      // Load real appointments data
+      await fetchAppointments();
+      
       // Load KPIs
       setTimeout(() => {
         setData(prev => ({ ...prev, kpis: generateMockKPIs(role) }));
         setLoading(prev => ({ ...prev, kpis: false }));
       }, 800);
 
-      // Load appointments
+      // Load appointments with real data
       setTimeout(() => {
-        setData(prev => ({ ...prev, appointments: generateMockAppointments(role) }));
+        const mappedAppointments = realAppointments.map(apt => ({
+          id: apt.id,
+          customer_id: apt.customer_id || '',
+          client_id: apt.customer_id || '',
+          barber_id: apt.barber_id || '',
+          customer_name: apt.customer_name,
+          customer_email: apt.customer_email || '',
+          client_name: apt.customer_name,
+          barber_name: apt.barber_name || 'Barbeiro não encontrado',
+          service_id: apt.service_id || '',
+          service_name: apt.service?.name || 'Serviço não encontrado',
+          appointment_date: apt.appointment_date,
+          appointment_time: apt.appointment_time,
+          duration_minutes: apt.service?.duration_minutes || 30,
+          status: apt.status,
+          total_price: apt.total_price,
+          notes: apt.notes || '',
+          price: apt.total_price,
+          created_at: apt.created_at || new Date().toISOString(),
+          updated_at: apt.updated_at || new Date().toISOString()
+        }));
+        setData(prev => ({ ...prev, appointments: mappedAppointments }));
         setLoading(prev => ({ ...prev, appointments: false }));
       }, 1200);
 
@@ -625,8 +558,8 @@ export const useDashboardData = (role: UserRole): DashboardData => {
         setTimeout(() => {
           setData(prev => ({ ...prev, barbers: generateMockBarbers() }));
           setStats({
-            totalRevenue: 12450,
-            totalAppointments: 156,
+            totalRevenue: realAppointments.reduce((sum, apt) => sum + apt.total_price, 0),
+            totalAppointments: realAppointments.length,
             activeBarbers: 8,
             averageRating: 4.8,
             monthlyGrowth: 12.5
@@ -657,9 +590,9 @@ export const useDashboardData = (role: UserRole): DashboardData => {
     };
 
     loadData();
-  }, [role]);
+  }, [role, realAppointments, fetchAppointments]);
 
-  const refreshData = (): void => {
+  const refreshData = async (): Promise<void> => {
     setLoading({
       kpis: true,
       appointments: true,
@@ -668,11 +601,36 @@ export const useDashboardData = (role: UserRole): DashboardData => {
       quickActions: true
     });
     
-    // Reload all data
+    // Reload real appointments data
+    await fetchAppointments();
+    
+    // Reload other data
     setTimeout(() => {
+      const mappedAppointments = realAppointments.map(apt => ({
+        id: apt.id,
+        customer_id: apt.customer_id || '',
+        client_id: apt.customer_id || '',
+        barber_id: apt.barber_id || '',
+        customer_name: apt.customer_name,
+        customer_email: apt.customer_email || '',
+        client_name: apt.customer_name,
+        barber_name: apt.barber_name || 'Barbeiro não encontrado',
+        service_id: apt.service_id || '',
+        service_name: apt.service?.name || 'Serviço não encontrado',
+        appointment_date: apt.appointment_date,
+        appointment_time: apt.appointment_time,
+        duration_minutes: apt.service?.duration_minutes || 30,
+        status: apt.status,
+        total_price: apt.total_price,
+        notes: apt.notes || '',
+        price: apt.total_price,
+        created_at: apt.created_at || new Date().toISOString(),
+        updated_at: apt.updated_at || new Date().toISOString()
+      }));
+      
       setData({
         kpis: generateMockKPIs(role),
-        appointments: generateMockAppointments(role),
+        appointments: mappedAppointments,
         barbers: generateMockBarbers(),
         customers: generateMockCustomers(),
         chartData: generateMockChartData(role),

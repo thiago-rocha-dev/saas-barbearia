@@ -3,7 +3,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useAppointments } from '../../hooks/useAppointments';
 import { useToast } from '../../hooks/useToast';
 import type { Appointment, AppointmentStatus } from '../../types/appointments';
-import type { UserRole } from '../../lib/auth';
+import type { UserRole } from '../../types/dashboard';
 
 interface AppointmentCardProps {
   appointment: Appointment;

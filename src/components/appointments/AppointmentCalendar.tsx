@@ -6,7 +6,7 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { useAuth } from '../../hooks/useAuth';
 import { useAppointments } from '../../hooks/useAppointments';
 import type { CalendarEvent, CalendarView } from '../../types/appointments';
-import type { UserRole } from '../../lib/auth';
+import type { UserRole } from '../../types/dashboard';
 
 // Configure moment localizer
 const localizer = momentLocalizer(moment);

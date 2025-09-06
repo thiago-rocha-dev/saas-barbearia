@@ -38,7 +38,7 @@ export type AppointmentStatus = 'pending' | 'confirmed' | 'in_progress' | 'compl
 export interface Service {
   id: string;
   name: string;
-  duration: number; // minutes
+  duration_minutes: number; // minutes
   price: number;
   description?: string;
 }

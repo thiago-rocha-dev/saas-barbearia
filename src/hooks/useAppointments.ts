@@ -33,23 +33,32 @@ export const useAppointments = () => {
         .from('appointments')
         .select(`
           *,
-          client:client_id(id, email, user_metadata),
-          barber:barber_id(id, email, user_metadata),
+          customer:customer_id(id, email, full_name),
+          barber_profile:barber_id(id, profile_id),
           service:service_id(id, name, duration_minutes, price)
         `);
 
       // Apply role-based filtering
       if (user.role === 'barber') {
-        query = query.eq('barber_id', user.id);
+        // For barbers, we need to find their barber record first
+        const { data: barberData } = await supabase
+          .from('barbers')
+          .select('id')
+          .eq('profile_id', user.id)
+          .single();
+        
+        if (barberData) {
+          query = query.eq('barber_id', barberData.id);
+        }
       } else if (user.role === 'customer') {
-        query = query.eq('client_id', user.id);
+        query = query.eq('customer_id', user.id);
       }
       // Admin can see all appointments
 
       // Apply additional filters
       if (filters) {
         if (filters.barberId) query = query.eq('barber_id', filters.barberId);
-        if (filters.clientId) query = query.eq('client_id', filters.clientId);
+        if (filters.customerId) query = query.eq('customer_id', filters.customerId);
         if (filters.status) query = query.eq('status', filters.status);
         if (filters.startDate) query = query.gte('appointment_date', filters.startDate);
         if (filters.endDate) query = query.lte('appointment_date', filters.endDate);
@@ -307,7 +316,7 @@ export const useAppointments = () => {
           
           const hasConflict = existingAppointments.some(apt => {
             const aptStart = new Date(`${apt.appointment_date}T${apt.appointment_time}`);
-            const aptEnd = new Date(aptStart.getTime() + apt.duration_minutes * 60000);
+            const aptEnd = new Date(aptStart.getTime() + (apt.duration_minutes || 30) * 60000);
 
             return (
               (slotStart >= aptStart && slotStart < aptEnd) ||
@@ -325,7 +334,7 @@ export const useAppointments = () => {
             available: !hasConflict && hasEnoughTime,
             appointment_id: hasConflict ? existingAppointments.find(apt => {
               const aptStart = new Date(`${apt.appointment_date}T${apt.appointment_time}`);
-              const aptEnd = new Date(aptStart.getTime() + apt.duration_minutes * 60000);
+              const aptEnd = new Date(aptStart.getTime() + (apt.duration_minutes || 30) * 60000);
 
               return (
                 (slotStart >= aptStart && slotStart < aptEnd) ||
@@ -353,7 +362,7 @@ export const useAppointments = () => {
         id: appointment.id,
         title: `${appointment.service_name}`,
         start: startDateTime,
-        end: new Date(startDateTime.getTime() + appointment.duration_minutes * 60000),
+        end: new Date(startDateTime.getTime() + (appointment.duration_minutes || 30) * 60000),
         resource: appointment
       };
     });

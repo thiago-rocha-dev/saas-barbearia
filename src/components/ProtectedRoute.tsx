@@ -1,77 +1,97 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { LoadingSpinner } from './ui/LoadingSpinner';
-import { useToast } from '../hooks/useToast';
 import type { UserRole } from '../types/dashboard';
+import { LoadingSpinner } from './ui/LoadingSpinner';
+
+// ============================================================================
+// COMPONENTE DE ROTA PROTEGIDA REFATORADO
+// ============================================================================
+// Usa o novo sistema de autenticação centralizado e elimina lógica duplicada.
+// ============================================================================
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  allowedRoles?: UserRole[];
-  requireAuth?: boolean;
-  redirectTo?: string;
+  requiredRole?: UserRole;
+  requiredRoles?: UserRole[];
 }
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
-  allowedRoles,
-  requireAuth = true,
-  redirectTo,
+  requiredRole,
+  requiredRoles,
 }) => {
-  const { user, loading, canAccess, getRedirectPath } = useAuth();
-  const { addToast } = useToast();
+  const { user, loading, error, getRedirectPath } = useAuth();
   const location = useLocation();
 
-  useEffect(() => {
-    // Show access denied toast if user tries to access unauthorized route
-    if (!loading && user && allowedRoles && !allowedRoles.includes(user.role)) {
-      addToast({
-        type: 'error',
-        title: 'Acesso Negado',
-        description: 'Você não tem permissão para acessar esta página.',
-      });
-    }
-  }, [user, loading, allowedRoles, addToast]);
-
-  // Show loading spinner while checking authentication
+  // ============================================================================
+  // LOADING STATE
+  // ============================================================================
+  
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900">
-        <LoadingSpinner size="lg" />
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <LoadingSpinner size="lg" />
+          <p className="mt-4 text-gray-600">Verificando autenticação...</p>
+        </div>
       </div>
     );
   }
 
-  // Redirect to login if authentication is required but user is not authenticated
-  if (requireAuth && !user) {
+  // ============================================================================
+  // ERROR STATE - PROFILE MAL CONFIGURADO
+  // ============================================================================
+  
+  if (error) {
     return (
-      <Navigate 
-        to="/auth/login" 
-        state={{ from: location.pathname }} 
-        replace 
-      />
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="max-w-md w-full bg-white p-8 rounded-lg shadow-lg text-center">
+          <div className="mb-4">
+            <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+              <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            </div>
+          </div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Acesso Negado</h2>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <button
+            onClick={() => window.location.href = '/auth/login'}
+            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
+          >
+            Voltar ao Login
+          </button>
+        </div>
+      </div>
     );
   }
 
-  // Check role-based access
-  if (user && allowedRoles && !allowedRoles.includes(user.role)) {
-    // Redirect to user's appropriate dashboard
-    const userDashboard = getRedirectPath();
-    return <Navigate to={userDashboard} replace />;
+  // ============================================================================
+  // REDIRECIONAMENTO PARA LOGIN SE NÃO AUTENTICADO
+  // ============================================================================
+  
+  if (!user) {
+    return <Navigate to="/auth/login" state={{ from: location }} replace />;
   }
 
-  // Check path-based access using canAccess method
-  if (user && !canAccess(location.pathname)) {
-    const userDashboard = getRedirectPath();
-    return <Navigate to={userDashboard} replace />;
+  // ============================================================================
+  // VALIDAÇÃO DE ROLE E REDIRECIONAMENTO SEGURO
+  // ============================================================================
+  
+  const allowedRoles = requiredRoles || (requiredRole ? [requiredRole] : []);
+  
+  if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
+    // Usar função centralizada de redirecionamento
+    const redirectPath = getRedirectPath();
+    console.log('🔄 User role', user.role, 'not allowed, redirecting to:', redirectPath);
+    return <Navigate to={redirectPath} replace />;
   }
 
-  // Custom redirect logic
-  if (redirectTo) {
-    return <Navigate to={redirectTo} replace />;
-  }
-
-  // Render children if all checks pass
+  // ============================================================================
+  // RENDERIZAÇÃO DOS CHILDREN SE TUDO OK
+  // ============================================================================
+  
   return <>{children}</>;
 };
 
@@ -81,62 +101,52 @@ export const withRoleProtection = (
   allowedRoles: UserRole[]
 ) => {
   return (props: any) => (
-    <ProtectedRoute allowedRoles={allowedRoles}>
+    <ProtectedRoute requiredRoles={allowedRoles}>
       <Component {...props} />
     </ProtectedRoute>
   );
 };
 
-// Specific role guards for convenience
+// ============================================================================
+// COMPONENTES DE ROTA ESPECÍFICOS POR ROLE
+// ============================================================================
+
 export const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <ProtectedRoute allowedRoles={['admin']}>
-    {children}
-  </ProtectedRoute>
+  <ProtectedRoute requiredRole="admin">{children}</ProtectedRoute>
 );
 
 export const BarberRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <ProtectedRoute allowedRoles={['barber']}>
-    {children}
-  </ProtectedRoute>
+  <ProtectedRoute requiredRole="barber">{children}</ProtectedRoute>
 );
 
 export const CustomerRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <ProtectedRoute allowedRoles={['customer']}>
-    {children}
-  </ProtectedRoute>
+  <ProtectedRoute requiredRole="customer">{children}</ProtectedRoute>
 );
 
-// Multi-role access guards
-export const StaffRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <ProtectedRoute allowedRoles={['admin', 'barber']}>
-    {children}
-  </ProtectedRoute>
-);
+// ============================================================================
+// ROTA PÚBLICA (REDIRECIONA USUÁRIOS AUTENTICADOS PARA SEU DASHBOARD)
+// ============================================================================
 
-export const AuthenticatedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <ProtectedRoute allowedRoles={['admin', 'barber', 'customer']}>
-    {children}
-  </ProtectedRoute>
-);
-
-// Public route that redirects authenticated users to their dashboard
 export const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading, getRedirectPath } = useAuth();
-
+  
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900">
-        <LoadingSpinner size="lg" />
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <LoadingSpinner size="lg" />
+          <p className="mt-4 text-gray-600">Carregando...</p>
+        </div>
       </div>
     );
   }
-
-  // Redirect authenticated users to their appropriate dashboard
+  
   if (user) {
-    const userDashboard = getRedirectPath();
-    return <Navigate to={userDashboard} replace />;
+    const redirectPath = getRedirectPath();
+    console.log('🔄 User authenticated on public route, redirecting to:', redirectPath);
+    return <Navigate to={redirectPath} replace />;
   }
-
+  
   return <>{children}</>;
 };
 

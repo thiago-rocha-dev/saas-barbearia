@@ -15,20 +15,41 @@ export interface Service {
 
 export interface Appointment {
   id: string;
-  client_id: string;
+  customer_id: string;
+  client_id?: string; // Legacy field compatibility
   barber_id: string;
-  client_name: string;
-  barber_name: string;
+  customer_name: string;
+  client_name?: string; // Legacy field compatibility
+  customer_email: string;
+  customer_phone?: string;
   service_id: string;
-  service_name: string;
+  service_name?: string; // Computed field
   appointment_date: string;
   appointment_time: string;
-  duration_minutes: number;
+  duration_minutes?: number; // From service
   status: AppointmentStatus;
+  total_price: number;
+  price?: number; // Legacy field compatibility
   notes?: string;
-  price?: number;
   created_at: string;
-  updated_at: string;
+  updated_at?: string;
+  barber_name?: string; // Computed field
+  datetime?: Date;
+  customer?: {
+    id: string;
+    email: string;
+    full_name: string;
+  };
+  barber_profile?: {
+    id: string;
+    profile_id: string;
+  };
+  service?: {
+    id: string;
+    name: string;
+    duration_minutes: number;
+    price: number;
+  };
 }
 
 export interface TimeSlot {
@@ -39,17 +60,22 @@ export interface TimeSlot {
 }
 
 export interface AppointmentFormData {
-  client_id?: string;
+  customer_id?: string;
+  client_id?: string; // Legacy field compatibility
   barber_id: string;
   service_id: string;
+  customer_name: string;
+  customer_email: string;
+  customer_phone?: string;
   appointment_date: string;
   appointment_time: string;
+  total_price: number;
   notes?: string;
 }
 
 export interface AppointmentFilters {
   barberId?: string;
-  clientId?: string;
+  customerId?: string;
   serviceId?: string;
   startDate?: string;
   endDate?: string;
