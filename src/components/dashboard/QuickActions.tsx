@@ -11,6 +11,11 @@ interface QuickActionsProps {
   variant?: QuickActionsVariant;
   customActions?: QuickAction[];
   actions?: QuickAction[];
+  // TRAE_FIX: Handlers para diferentes ações
+  onCreateAppointment?: () => void;
+  onViewReports?: () => void;
+  onSettings?: () => void;
+  onSupport?: () => void;
 }
 
 interface ColorClasses {
@@ -25,7 +30,12 @@ const QuickActions: React.FC<QuickActionsProps> = ({
   className,
   variant = 'default',
   customActions,
-  actions
+  actions,
+  // TRAE_FIX: Desestruturação dos handlers
+  onCreateAppointment,
+  onViewReports,
+  onSettings,
+  onSupport
 }) => {
   const { user } = useAuth();
 
@@ -46,7 +56,8 @@ const QuickActions: React.FC<QuickActionsProps> = ({
             label: 'Ver Relatórios',
             icon: '📊',
             color: 'cyan',
-            action: () => console.log('Ver relatórios'),
+            // TRAE_FIX: Handler funcional para relatórios
+            action: onViewReports || (() => console.log('Ver relatórios')),
             description: 'Acessar relatórios detalhados'
           },
           {
@@ -54,7 +65,8 @@ const QuickActions: React.FC<QuickActionsProps> = ({
             label: 'Configurações',
             icon: '⚙️',
             color: 'purple',
-            action: () => console.log('Configurações'),
+            // TRAE_FIX: Handler funcional para configurações
+            action: onSettings || (() => console.log('Configurações')),
             description: 'Gerenciar configurações'
           },
           {
@@ -110,7 +122,8 @@ const QuickActions: React.FC<QuickActionsProps> = ({
             label: 'Novo Agendamento',
             icon: '📅',
             color: 'gold',
-            action: () => console.log('Novo agendamento'),
+            // TRAE_FIX: Conectado handler funcional
+            action: onCreateAppointment || (() => console.log('Novo agendamento')),
             description: 'Agendar novo corte',
             featured: true
           },
@@ -135,7 +148,8 @@ const QuickActions: React.FC<QuickActionsProps> = ({
             label: 'Suporte',
             icon: '💬',
             color: 'green',
-            action: () => console.log('Suporte'),
+            // TRAE_FIX: Handler funcional para suporte
+            action: onSupport || (() => console.log('Suporte')),
             description: 'Falar com suporte'
           }
         ];
