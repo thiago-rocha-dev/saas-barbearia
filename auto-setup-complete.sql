@@ -90,6 +90,21 @@ CREATE TABLE IF NOT EXISTS public.appointments (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Tabela de horários de trabalho dos barbeiros
+CREATE TABLE IF NOT EXISTS public.working_hours (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    barber_id UUID NOT NULL REFERENCES public.barbers(id) ON DELETE CASCADE,
+    day_of_week INTEGER NOT NULL CHECK (day_of_week >= 0 AND day_of_week <= 6), -- 0=domingo, 1=segunda, etc
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    break_start TIME,
+    break_end TIME,
+    is_available BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(barber_id, day_of_week)
+);
+
 -- ============================================================================
 -- 2. CONFIGURAÇÃO DE RLS (ROW LEVEL SECURITY)
 -- ============================================================================
@@ -100,6 +115,7 @@ ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.barbers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.services ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.appointments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.working_hours ENABLE ROW LEVEL SECURITY;
 
 -- Políticas básicas (permissivas para desenvolvimento)
 CREATE POLICY "Permitir tudo para usuários autenticados" ON public.barbershops FOR ALL TO authenticated USING (true);
@@ -107,6 +123,7 @@ CREATE POLICY "Permitir tudo para usuários autenticados" ON public.profiles FOR
 CREATE POLICY "Permitir tudo para usuários autenticados" ON public.barbers FOR ALL TO authenticated USING (true);
 CREATE POLICY "Permitir tudo para usuários autenticados" ON public.services FOR ALL TO authenticated USING (true);
 CREATE POLICY "Permitir tudo para usuários autenticados" ON public.appointments FOR ALL TO authenticated USING (true);
+CREATE POLICY "Permitir tudo para usuários autenticados" ON public.working_hours FOR ALL TO authenticated USING (true);
 
 -- ============================================================================
 -- 3. FUNÇÃO E TRIGGER PARA CRIAÇÃO AUTOMÁTICA DE PERFIS

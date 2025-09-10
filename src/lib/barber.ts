@@ -60,12 +60,25 @@ export async function updateBarberProfile(barberId: string, updates: UpdateBarbe
 }
 
 // Função para obter serviços do barbeiro
+// TRAE_FIX-services: Corrigir para usar barbershop_id em vez de barber_id
 export async function getBarberServices(barberId: string) {
   try {
+    // Primeiro, buscar o barbershop_id do barbeiro
+    const { data: barberData, error: barberError } = await supabase
+      .from('barbers')
+      .select('barbershop_id')
+      .eq('profile_id', barberId)
+      .single();
+
+    if (barberError || !barberData) {
+      return { success: false, error: 'Barbeiro não encontrado' };
+    }
+
+    // Buscar serviços da barbearia
     const { data, error } = await supabase
-      .from('barber_services')
+      .from('services')
       .select('*')
-      .eq('barber_id', barberId)
+      .eq('barbershop_id', barberData.barbershop_id)
       .eq('is_active', true)
       .order('name');
 
@@ -80,13 +93,25 @@ export async function getBarberServices(barberId: string) {
 }
 
 // Função para criar serviço
+// TRAE_FIX-services: Corrigir para usar tabela services com barbershop_id
 export async function createBarberService(barberId: string, service: CreateServiceRequest) {
   try {
+    // Primeiro, buscar o barbershop_id do barbeiro
+    const { data: barberData, error: barberError } = await supabase
+      .from('barbers')
+      .select('barbershop_id')
+      .eq('profile_id', barberId)
+      .single();
+
+    if (barberError || !barberData) {
+      return { success: false, error: 'Barbeiro não encontrado' };
+    }
+
     const { data, error } = await supabase
-      .from('barber_services')
+      .from('services')
       .insert({
         ...service,
-        barber_id: barberId,
+        barbershop_id: barberData.barbershop_id,
         is_active: true,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
@@ -105,10 +130,11 @@ export async function createBarberService(barberId: string, service: CreateServi
 }
 
 // Função para atualizar serviço
+// TRAE_FIX-services: Corrigir para usar tabela services
 export async function updateBarberService(serviceId: string, updates: UpdateServiceRequest) {
   try {
     const { data, error } = await supabase
-      .from('barber_services')
+      .from('services')
       .update({
         ...updates,
         updated_at: new Date().toISOString()
@@ -128,10 +154,11 @@ export async function updateBarberService(serviceId: string, updates: UpdateServ
 }
 
 // Função para deletar serviço
+// TRAE_FIX-services: Corrigir para usar tabela services
 export async function deleteBarberService(serviceId: string) {
   try {
     const { error } = await supabase
-      .from('barber_services')
+      .from('services')
       .update({ is_active: false })
       .eq('id', serviceId);
 

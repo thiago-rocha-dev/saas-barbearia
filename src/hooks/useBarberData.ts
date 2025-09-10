@@ -103,6 +103,7 @@ export function useBarberData() {
   }, [barberId, showToast]);
 
   // Função para carregar serviços
+  // TRAE_FIX-services: Adicionar fallback para criar serviços padrão se barbeiro não tiver
   const loadServices = useCallback(async () => {
     if (!barberId) return;
     
@@ -110,7 +111,45 @@ export function useBarberData() {
     try {
       const result = await getBarberServices(barberId);
       if (result.success && result.data) {
-        setServices(result.data);
+        // Se não há serviços, criar os padrão automaticamente
+        if (result.data.length === 0) {
+          console.log('🔄 Barbeiro sem serviços, criando serviços padrão...');
+          
+          const defaultServices = [
+            {
+              name: 'Corte',
+              description: 'Corte de cabelo masculino clássico ou moderno',
+              price: 40.00,
+              duration_minutes: 30
+            },
+            {
+              name: 'Barba',
+              description: 'Barba estilizada ou tradicional, acabamento com toalha quente',
+              price: 30.00,
+              duration_minutes: 30
+            },
+            {
+              name: 'Corte + Barba',
+              description: 'Combo completo: corte + barba',
+              price: 60.00,
+              duration_minutes: 60
+            }
+          ];
+          
+          // Criar serviços padrão
+          for (const service of defaultServices) {
+            await createBarberService(barberId, service);
+          }
+          
+          // Recarregar serviços após criação
+          const newResult = await getBarberServices(barberId);
+          if (newResult.success && newResult.data) {
+            setServices(newResult.data);
+            showToast('Serviços padrão criados automaticamente', 'success');
+          }
+        } else {
+          setServices(result.data);
+        }
       } else {
         showToast('Erro ao carregar serviços', 'error');
       }

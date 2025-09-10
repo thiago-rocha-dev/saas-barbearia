@@ -323,45 +323,108 @@ export function ClientBooking({
                     </div>
                   ))}
                 </div>
+              ) : availableBarbers.length === 0 ? (
+                // TRAE_FIX: Fallback amigável quando não há barbeiros disponíveis
+                <div className="text-center py-12">
+                  <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                    <Scissors className="h-12 w-12 text-gray-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    Nenhum barbeiro disponível no momento
+                  </h3>
+                  <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                    Não encontramos barbeiros ativos para agendamento. Entre em contato com o suporte ou tente novamente mais tarde.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => loadBarbers()}
+                      className="flex items-center gap-2"
+                    >
+                      <Loader2 className="h-4 w-4" />
+                      Tentar Novamente
+                    </Button>
+                    <Button 
+                      variant="primary"
+                      onClick={() => window.open('mailto:suporte@barberpro.com', '_blank')}
+                    >
+                      Contatar Suporte
+                    </Button>
+                  </div>
+                </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {availableBarbers.map((barber) => (
-                    <div
-                      key={barber.id}
-                      className={`p-4 border rounded-lg cursor-pointer transition-all hover:shadow-md ${
-                        selectedBarber?.id === barber.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
-                      }`}
-                      onClick={() => handleBarberSelect(barber)}
-                    >
-                      <div className="flex items-center gap-3 mb-3">
-                        <Avatar className="h-12 w-12">
-                          <AvatarImage src={barber.avatar_url} alt={barber.name} />
-                          <AvatarFallback>{barber.name.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1">
-                          <h3 className="font-semibold">{barber.name}</h3>
-                          <div className="flex items-center gap-1">
-                            <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                            <span className="text-sm text-gray-600">
-                              {barber.rating.toFixed(1)} ({barber.total_reviews})
-                            </span>
+                  {availableBarbers.map((barber) => {
+                    // TRAE_FIX-card: Safe rendering com fallbacks para todos os campos
+                    const barberName = barber.name || 'Nome não informado';
+                    const barberRating = barber.rating || 0;
+                    const barberReviews = barber.total_reviews || 0;
+                    const barberBio = barber.bio || '';
+                    const barberSpecialties = barber.specialties || [];
+                    const barberAvatar = barber.avatar_url || '';
+                    
+                    // TRAE_FIX-card: Fallback para iniciais do nome
+                    const getInitials = (name: string) => {
+                      return name.split(' ').map(n => n.charAt(0)).join('').toUpperCase().slice(0, 2);
+                    };
+                    
+                    return (
+                      <div
+                        key={barber.id}
+                        className={`p-4 border rounded-lg cursor-pointer transition-all hover:shadow-md hover:border-blue-300 ${
+                          selectedBarber?.id === barber.id 
+                            ? 'border-blue-500 bg-blue-50 shadow-md' 
+                            : 'border-gray-200 bg-white'
+                        }`}
+                        onClick={() => handleBarberSelect(barber)}
+                      >
+                        <div className="flex items-center gap-3 mb-3">
+                          <Avatar className="h-12 w-12 border-2 border-gray-100">
+                            {/* TRAE_FIX-card: Avatar com fallback seguro */}
+                            <AvatarImage 
+                              src={barberAvatar} 
+                              alt={barberName}
+                              className="object-cover"
+                            />
+                            <AvatarFallback className="bg-blue-100 text-blue-700 font-semibold">
+                              {getInitials(barberName)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            {/* TRAE_FIX-card: Nome com truncate para evitar overflow */}
+                            <h3 className="font-semibold text-gray-900 truncate">{barberName}</h3>
+                            <div className="flex items-center gap-1">
+                              <Star className="h-4 w-4 text-yellow-400 fill-current flex-shrink-0" />
+                              <span className="text-sm text-gray-600">
+                                {/* TRAE_FIX-card: Rating com fallback seguro */}
+                                {barberRating > 0 ? barberRating.toFixed(1) : 'N/A'} 
+                                ({barberReviews > 0 ? barberReviews : 0})
+                              </span>
+                            </div>
                           </div>
                         </div>
+                        {/* TRAE_FIX-card: Bio com renderização condicional segura */}
+                        {barberBio && barberBio.trim() && (
+                          <p className="text-sm text-gray-600 mb-2 line-clamp-2">{barberBio}</p>
+                        )}
+                        {/* TRAE_FIX-card: Especialidades com verificação de array */}
+                        {barberSpecialties && barberSpecialties.length > 0 && (
+                          <div className="flex flex-wrap gap-1">
+                            {barberSpecialties.slice(0, 3).map((specialty, index) => (
+                              <Badge key={index} variant="secondary" className="text-xs bg-gray-100 text-gray-700">
+                                {specialty || 'Especialidade'}
+                              </Badge>
+                            ))}
+                            {barberSpecialties.length > 3 && (
+                              <Badge variant="outline" className="text-xs">
+                                +{barberSpecialties.length - 3}
+                              </Badge>
+                            )}
+                          </div>
+                        )}
                       </div>
-                      {barber.bio && (
-                        <p className="text-sm text-gray-600 mb-2">{barber.bio}</p>
-                      )}
-                      {barber.specialties.length > 0 && (
-                        <div className="flex flex-wrap gap-1">
-                          {barber.specialties.slice(0, 3).map((specialty, index) => (
-                            <Badge key={index} variant="secondary" className="text-xs">
-                              {specialty}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -370,13 +433,19 @@ export function ClientBooking({
           {/* Passo 2: Escolher Serviço */}
           {currentStep === 'service' && (
             <div className="space-y-4">
+              {/* TRAE_FIX-nav: Header com barbeiro selecionado - renderização segura */}
               <div className="flex items-center gap-3 mb-4 p-3 bg-gray-50 rounded-lg">
                 <Avatar className="h-10 w-10">
-                  <AvatarImage src={selectedBarber?.avatar_url} alt={selectedBarber?.name} />
-                  <AvatarFallback>{selectedBarber?.name.charAt(0)}</AvatarFallback>
+                  <AvatarImage 
+                    src={selectedBarber?.avatar_url || ''} 
+                    alt={selectedBarber?.name || 'Barbeiro'} 
+                  />
+                  <AvatarFallback className="bg-blue-100 text-blue-700 font-semibold">
+                    {selectedBarber?.name ? selectedBarber.name.split(' ').map(n => n.charAt(0)).join('').toUpperCase().slice(0, 2) : 'BB'}
+                  </AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="font-medium">{selectedBarber?.name}</p>
+                  <p className="font-medium">{selectedBarber?.name || 'Barbeiro selecionado'}</p>
                   <p className="text-sm text-gray-600">Barbeiro selecionado</p>
                 </div>
               </div>
@@ -387,38 +456,112 @@ export function ClientBooking({
                     <div key={i} className="animate-pulse h-20 bg-gray-200 rounded-lg"></div>
                   ))}
                 </div>
-              ) : (
-                <div className="space-y-3">
-                  {availableServices.map((service) => (
-                    <div
-                      key={service.id}
-                      className={`p-4 border rounded-lg cursor-pointer transition-all hover:shadow-md ${
-                        selectedService?.id === service.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
-                      }`}
-                      onClick={() => handleServiceSelect(service)}
+              ) : availableServices.length === 0 ? (
+                // TRAE_FIX-nav: Fallback amigável quando não há serviços disponíveis
+                <div className="text-center py-12">
+                  <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                    <Scissors className="h-12 w-12 text-gray-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    Nenhum serviço disponível
+                  </h3>
+                  <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                    Este barbeiro não possui serviços cadastrados no momento. Escolha outro barbeiro ou entre em contato com o suporte.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => {
+                        setCurrentStep('barber');
+                        setSelectedBarber(null);
+                      }}
+                      className="flex items-center gap-2"
                     >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 bg-blue-100 rounded-lg">
-                            <Scissors className="h-5 w-5 text-blue-600" />
-                          </div>
-                          <div>
-                            <h3 className="font-semibold">{service.name}</h3>
-                            <p className="text-sm text-gray-600">{service.duration_minutes} minutos</p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-lg font-bold text-green-600">
-                            R$ {service.price.toFixed(2)}
-                          </div>
-                        </div>
-                      </div>
-                      {service.description && (
-                        <p className="text-sm text-gray-600 mt-2">{service.description}</p>
-                      )}
-                    </div>
-                  ))}
+                      <ArrowLeft className="h-4 w-4" />
+                      Escolher Outro Barbeiro
+                    </Button>
+                    <Button 
+                       variant="primary"
+                       onClick={() => selectedBarber && loadServices && loadServices(selectedBarber.id)}
+                       className="flex items-center gap-2"
+                     >
+                       <Loader2 className="h-4 w-4" />
+                       Tentar Novamente
+                     </Button>
+                  </div>
                 </div>
+              ) : (
+                // TRAE_FIX-nav: Lista de serviços com renderização segura
+                <>
+                  <div className="space-y-3">
+                    {availableServices.map((service) => {
+                      // TRAE_FIX-nav: Safe rendering para serviços
+                      const serviceName = service.name || 'Serviço';
+                      const serviceDuration = service.duration_minutes || 0;
+                      const servicePrice = service.price || 0;
+                      const serviceDescription = service.description || '';
+                      
+                      return (
+                        <div
+                          key={service.id}
+                          className={`p-4 border rounded-lg cursor-pointer transition-all hover:shadow-md hover:border-blue-300 ${
+                            selectedService?.id === service.id 
+                              ? 'border-blue-500 bg-blue-50 shadow-md' 
+                              : 'border-gray-200 bg-white'
+                          }`}
+                          onClick={() => handleServiceSelect(service)}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 bg-blue-100 rounded-lg flex-shrink-0">
+                                <Scissors className="h-5 w-5 text-blue-600" />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <h3 className="font-semibold text-gray-900 truncate">{serviceName}</h3>
+                                <p className="text-sm text-gray-600">
+                                  {serviceDuration > 0 ? `${serviceDuration} minutos` : 'Duração não informada'}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="text-right flex-shrink-0">
+                              <div className="text-lg font-bold text-green-600">
+                                R$ {servicePrice.toFixed(2)}
+                              </div>
+                            </div>
+                          </div>
+                          {serviceDescription && serviceDescription.trim() && (
+                            <p className="text-sm text-gray-600 mt-2 line-clamp-2">{serviceDescription}</p>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  
+                  {/* TRAE_FIX-nav: Botão de navegação sempre visível */}
+                  <div className="flex justify-between items-center pt-4 border-t">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => {
+                        setCurrentStep('barber');
+                        setSelectedService(null);
+                      }}
+                      className="flex items-center gap-2"
+                    >
+                      <ArrowLeft className="h-4 w-4" />
+                      Voltar
+                    </Button>
+                    
+                    {selectedService && (
+                      <Button 
+                        onClick={() => setCurrentStep('datetime')}
+                        className="flex items-center gap-2"
+                      >
+                        Próximo: Data e Horário
+                        <ArrowLeft className="h-4 w-4 rotate-180" />
+                      </Button>
+                    )}
+                  </div>
+                </>
               )}
             </div>
           )}
@@ -501,9 +644,45 @@ export function ClientBooking({
                     </div>
                   )}
                   {availableTimeSlots.length === 0 && !loading.timeSlots && (
-                    <div className="text-center py-8">
-                      <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-                      <p className="text-gray-500">Nenhum horário disponível para esta data</p>
+                    // TRAE_FIX-ux: Feedback amigável quando não há horários disponíveis
+                    <div className="text-center py-12">
+                      <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                        <AlertCircle className="h-12 w-12 text-gray-400" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                        Nenhum horário disponível
+                      </h3>
+                      <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                        Não há horários livres para {format(new Date(selectedDate), "EEEE, dd 'de' MMMM", { locale: ptBR })}. 
+                        Tente escolher outra data ou entre em contato conosco.
+                      </p>
+                      <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                        <Button 
+                          variant="outline" 
+                          onClick={() => {
+                            setSelectedDate('');
+                            setSelectedTime('');
+                          }}
+                          className="flex items-center gap-2"
+                        >
+                          <ArrowLeft className="h-4 w-4" />
+                          Escolher Outra Data
+                        </Button>
+                        <Button 
+                          variant="outline"
+                          onClick={() => {
+                            setCurrentStep('barber');
+                            setSelectedBarber(null);
+                            setSelectedService(null);
+                            setSelectedDate('');
+                            setSelectedTime('');
+                          }}
+                          className="flex items-center gap-2"
+                        >
+                          <Scissors className="h-4 w-4" />
+                          Escolher Outro Barbeiro
+                        </Button>
+                      </div>
                     </div>
                   )}
                 </div>
