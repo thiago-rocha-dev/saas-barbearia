@@ -63,7 +63,7 @@ export function ClientBooking({
     services: propLoading, 
     timeSlots: propLoading 
   } : hookLoading;
-  // const createBooking = onCreateBooking;
+  const createBooking = onCreateBooking || actions.createAppointment;
   const loadBarbers = onLoadBarbers || actions.loadAvailableBarbers;
   const loadServices = onLoadServices || actions.loadAvailableServices;
   const loadTimeSlots = onLoadTimeSlots || actions.loadAvailableTimeSlots;
@@ -134,6 +134,7 @@ export function ClientBooking({
     setCurrentStep('confirmation');
   };
   
+  // TRAE_FIX: Implementação completa do agendamento com feedback visual adequado
   const handleConfirmBooking = async () => {
     if (!selectedBarber || !selectedService || !selectedDate || !selectedTime) {
       toast({
@@ -144,25 +145,30 @@ export function ClientBooking({
       return;
     }
     
-    // const booking: BookingRequest = {
-    //   barber_id: selectedBarber.id,
-    //   service_id: selectedService.id,
-    //   appointment_date: selectedDate,
-    //   start_time: selectedTime,
-    //   notes: notes.trim() || undefined
-    // };
+    const booking: BookingRequest = {
+      barber_id: selectedBarber.id,
+      service_id: selectedService.id,
+      appointment_date: selectedDate,
+      start_time: selectedTime,
+      notes: notes.trim() || undefined
+    };
     
     setIsSubmitting(true);
     try {
-      // const appointmentId = await createBooking(booking);
-      const appointmentId = 'mock-id'; // TODO: Implement booking creation
+      // TRAE_FIX: Implementação real da criação de agendamento
+      const appointmentId = await createBooking(booking);
       if (appointmentId) {
         setShowConfirmation(true);
         toast({
           title: 'Sucesso!',
-          description: 'Agendamento criado com sucesso!'
+          description: 'Agendamento criado com sucesso!',
+          variant: 'default'
         });
         onBookingComplete?.(appointmentId);
+        // TRAE_FIX: Reset do formulário após sucesso
+        setTimeout(() => {
+          resetBooking();
+        }, 2000);
       } else {
         toast({
           title: 'Erro',
@@ -171,9 +177,10 @@ export function ClientBooking({
         });
       }
     } catch (error) {
+      console.error('Erro ao criar agendamento:', error);
       toast({
         title: 'Erro',
-        description: 'Erro inesperado ao criar agendamento',
+        description: error instanceof Error ? error.message : 'Erro inesperado ao criar agendamento',
         variant: 'destructive'
       });
     } finally {
