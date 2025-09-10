@@ -40,6 +40,7 @@ export function ClientBooking({
   availableServices: propServices,
   availableTimeSlots: propTimeSlots,
   loading: propLoading,
+  onCreateBooking,
   onLoadBarbers,
   onLoadServices,
   onLoadTimeSlots,

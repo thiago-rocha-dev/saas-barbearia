@@ -105,7 +105,11 @@ const DashboardCustomer: React.FC = () => {
               <p className="text-gray-300 mb-4">
                 Agende seu primeiro corte e descubra a experiência premium que preparamos para você.
               </p>
-              <button className="px-6 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-medium hover:from-purple-600 hover:to-pink-600 transition-all duration-200">
+              {/* TRAE_FIX: Adicionado onClick para botão 'Agendar Primeiro Corte' */}
+              <button 
+                onClick={handleCreateAppointment}
+                className="px-6 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-medium hover:from-purple-600 hover:to-pink-600 transition-all duration-200"
+              >
                 Agendar Primeiro Corte
               </button>
             </div>
@@ -321,7 +325,11 @@ const DashboardCustomer: React.FC = () => {
             <p className="text-gray-300 mb-6">
               Agende seu atendimento com nossos barbeiros especializados e transforme seu estilo.
             </p>
-            <button className="px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-semibold text-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-purple-500/25">
+            {/* TRAE_FIX: Adicionado onClick para botão principal de agendamento */}
+            <button 
+              onClick={handleCreateAppointment}
+              className="px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-semibold text-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-purple-500/25"
+            >
               🗓️ Novo Agendamento
             </button>
           </div>
@@ -424,10 +432,12 @@ const DashboardCustomer: React.FC = () => {
       )}
 
       {activeTab === 'appointments' && (
+          // TRAE_FIX: Adicionado handler para botão Novo Agendamento
           <ClientAppointments 
             appointments={appointments}
             loading={loading.appointments}
             onCancel={actions.cancelAppointment}
+            onCreateNew={handleCreateAppointment}
           />
         )}
         {activeTab === 'history' && (
