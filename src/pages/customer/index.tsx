@@ -4,6 +4,7 @@ import { ClientBooking } from '../../components/client/ClientBooking';
 import { ClientHistory } from '../../components/client/ClientHistory';
 import { ClientAppointments } from '../../components/client/ClientAppointments';
 import { useClientData } from '../../hooks/useClientData';
+import { useAuth } from '../../hooks/useAuth';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { Card, CardContent } from '../../components/ui/card';
 import { Button } from '../../components/ui/Button';
@@ -14,14 +15,17 @@ import {
   History,
   Plus,
   Star,
-  TrendingUp
+  TrendingUp,
+  LogOut
 } from 'lucide-react';
 
 
 const DashboardCustomer: React.FC = () => {
   const { profile, appointments, stats, loading, actions } = useClientData();
+  const { signOut } = useAuth();
   const [showOnboarding, setShowOnboarding] = useState(appointments.length === 0);
   const [activeTab, setActiveTab] = useState<'profile' | 'appointments' | 'history' | 'booking'>('profile');
+  const [isSigningOut, setIsSigningOut] = useState(false);
 
   const handleCreateAppointment = () => {
     setActiveTab('booking');
@@ -31,6 +35,20 @@ const DashboardCustomer: React.FC = () => {
     actions.loadProfile();
     actions.loadAppointments();
     actions.loadStats();
+  };
+
+  // TRAE_FIX: Implementação do logout com confirmação e feedback visual
+  const handleSignOut = async () => {
+    if (window.confirm('Tem certeza que deseja sair da sua conta?')) {
+      setIsSigningOut(true);
+      try {
+        await signOut();
+      } catch (error) {
+        console.error('Erro ao fazer logout:', error);
+      } finally {
+        setIsSigningOut(false);
+      }
+    }
   };
 
 
@@ -124,6 +142,17 @@ const DashboardCustomer: React.FC = () => {
           >
             Atualizar
           </button>
+          {/* TRAE_FIX: Botão de logout com confirmação e feedback visual */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleSignOut}
+            disabled={isSigningOut}
+            className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-300 border-red-500/30 hover:border-red-500/50 rounded-lg transition-all duration-200 flex items-center space-x-2"
+          >
+            <LogOut className="w-4 h-4" />
+            <span>{isSigningOut ? 'Saindo...' : 'Sair'}</span>
+          </Button>
         </div>
       </div>
 
@@ -189,13 +218,35 @@ const DashboardCustomer: React.FC = () => {
                 {getTimeUntilAppointment()}
               </div>
               <div className="text-sm text-gray-400 mb-3">restantes</div>
+              {/* TRAE_FIX: Implementação dos botões Reagendar e Cancelar com funcionalidade real */}
               <div className="flex space-x-2">
-                <button className="px-3 py-1 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 rounded text-sm transition-colors">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setActiveTab('booking')}
+                  className="px-3 py-1 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border-purple-500/30 hover:border-purple-500/50 rounded text-sm transition-colors"
+                >
                   Reagendar
-                </button>
-                <button className="px-3 py-1 bg-red-500/20 hover:bg-red-500/30 text-red-300 rounded text-sm transition-colors">
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (nextAppointment && actions.cancelAppointment) {
+                      // TRAE_FIX: Implementação do cancelamento com confirmação
+                      if (window.confirm('Tem certeza que deseja cancelar este agendamento?')) {
+                        actions.cancelAppointment(nextAppointment.id).then((success) => {
+                          if (success) {
+                            handleRefresh();
+                          }
+                        });
+                      }
+                    }
+                  }}
+                  className="px-3 py-1 bg-red-500/20 hover:bg-red-500/30 text-red-300 border-red-500/30 hover:border-red-500/50 rounded text-sm transition-colors"
+                >
                   Cancelar
-                </button>
+                </Button>
               </div>
             </div>
           </div>
